@@ -1,10 +1,9 @@
 import { useMachine } from "@xstate/react";
 import { machine } from "./machine";
+import { formatMilliseconds } from "./utils";
 
 export default function App() {
   const [state, send] = useMachine(machine);
-
-  console.log("state.context.elapsedTime", state.context.elapsedTime);
 
   return (
     <div className="App">
@@ -20,9 +19,9 @@ export default function App() {
             <div>
               <button
                 className="event-button"
-                onClick={() => send({ type: "PRESS_START" })}
+                onClick={() => send({ type: "start" })}
               >
-                PRESS_START
+                START
               </button>
             </div>
           </div>
@@ -35,21 +34,9 @@ export default function App() {
             <div>
               <button
                 className="event-button"
-                onClick={() => send({ type: "PRESS_STOP" })}
+                onClick={() => send({ type: "pause" })}
               >
-                PRESS_STOP
-              </button>
-              <button
-                className="event-button"
-                onClick={() => send({ type: "TICK" })}
-              >
-                TICK
-              </button>
-              <button
-                className="event-button"
-                onClick={() => send({ type: "PRESS_LAP" })}
-              >
-                PRESS_LAP
+                PAUSE
               </button>
             </div>
           </div>
@@ -62,21 +49,23 @@ export default function App() {
             <div>
               <button
                 className="event-button"
-                onClick={() => send({ type: "PRESS_START" })}
+                onClick={() => send({ type: "start" })}
               >
-                PRESS_START
+                START
               </button>
               <button
                 className="event-button"
-                onClick={() => send({ type: "PRESS_RESET" })}
+                onClick={() => send({ type: "reset" })}
               >
-                PRESS_RESET
+                RESET
               </button>
             </div>
           </div>
         )}
-
-        <pre>{JSON.stringify(state.context, null, 2)}</pre>
+        <div className="clock">
+          <div className="ghost">88:88:88</div>
+          {formatMilliseconds(state.context.elapsedTime)}
+        </div>
       </div>
     </div>
   );

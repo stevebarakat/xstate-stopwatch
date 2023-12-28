@@ -1,4 +1,5 @@
 import { interval, animationFrameScheduler } from "rxjs";
+import { start, Transport as t } from "tone";
 import { createMachine, assign, fromObservable } from "xstate";
 import { formatMilliseconds } from "./utils";
 
@@ -6,14 +7,13 @@ export const machine = createMachine(
   {
     context: {
       elapsedTime: 0,
-      laps: [],
     },
     id: "stopWatch",
-    initial: "initial",
+    initial: "paused",
     states: {
       initial: {
         on: {
-          PRESS_START: {
+          start: {
             target: "running",
           },
         },
@@ -23,92 +23,37 @@ export const machine = createMachine(
           src: "tickerActor",
           id: "start.ticker",
           onSnapshot: {
-            actions: assign({
-              elapsedTime: ({ context }) => {
-                return (context.elapsedTime += 20);
-              },
-              laps: ({ context }) => {
-                const laps = context.laps;
-                const latestLap = laps[laps.length - 1] ?? {
-                  startTime: 0,
-                  elapsedTime: 0,
-                };
-                if (laps.length === 0) {
-                  laps.push(latestLap);
-                }
-                latestLap.elapsedTime =
-                  context.elapsedTime - latestLap.startTime;
-                return laps;
-              },
+            actions: assign(() => {
+              const elapsedTime = t.seconds;
+              return {
+                elapsedTime,
+              };
             }),
           },
         },
         on: {
-          PRESS_STOP: {
+          pause: {
             target: "paused",
-          },
-          TICK: {
-            actions: assign({
-              elapsedTime: ({ context }) => {
-                return (context.elapsedTime += 20);
-              },
-              laps: ({ context }) => {
-                const laps = context.laps;
-                const latestLap = laps[laps.length - 1] ?? {
-                  startTime: 0,
-                  elapsedTime: 0,
-                };
-                if (laps.length === 0) {
-                  laps.push(latestLap);
-                }
-                latestLap.elapsedTime =
-                  context.elapsedTime - latestLap.startTime;
-                return laps;
-              },
-            }),
-          },
-          PRESS_LAP: {
-            actions: assign({
-              laps: ({ context }) => {
-                const laps = context.laps;
-                const newLap = {
-                  startTime: context.elapsedTime,
-                  elapsedTime: 0,
-                };
-                laps.push(newLap);
-                return laps;
-              },
-            }),
+            actions: () => t.pause(),
           },
         },
       },
       paused: {
         on: {
-          PRESS_START: {
+          start: {
             target: "running",
+            actions: () => t.start(),
           },
-          PRESS_RESET: {
-            target: "initial",
-            actions: assign({
-              elapsedTime: ({ context }) => {
-                return (context.elapsedTime = 0);
-              },
-              laps: ({ context }) => {
-                return (context.laps = []);
-              },
-            }),
+          reset: {
+            target: "paused",
+            actions: () => t.stop(),
           },
         },
       },
     },
     types: {
-      events: {} as
-        | { type: "PRESS_START" }
-        | { type: "PRESS_STOP" }
-        | { type: "TICK" }
-        | { type: "PRESS_LAP" }
-        | { type: "PRESS_RESET" },
-      context: {} as { elapsedTime: number; laps: unknown[] },
+      events: {} as { type: "start" } | { type: "pause" } | { type: "reset" },
+      context: {} as { elapsedTime: number; startTime: number },
     },
   },
   {
