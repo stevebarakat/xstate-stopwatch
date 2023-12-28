@@ -1,71 +1,45 @@
 import { useMachine } from "@xstate/react";
 import { machine } from "./machine";
 import { formatMilliseconds } from "./utils";
+import { Play, Pause, Square } from "lucide-react";
+import { TransportButton } from "./Buttons";
 
 export default function App() {
   const [state, send] = useMachine(machine);
 
   return (
-    <div className="App">
-      <div>
-        <div className="state-key"></div>
+    <div className="flex-y gap8">
+      {state.matches("initial") && (
+        <div>
+          <button
+            className="event-button"
+            onClick={() => send({ type: "start" })}
+          >
+            <Play />
+          </button>
+        </div>
+      )}
 
-        <div></div>
-
-        {state.matches("initial") && (
-          <div>
-            <div className="state-key">initial</div>
-
-            <div>
-              <button
-                className="event-button"
-                onClick={() => send({ type: "start" })}
-              >
-                START
-              </button>
-            </div>
-          </div>
-        )}
-
+      <div className="flex gap4">
         {state.matches("running") && (
           <div>
-            <div className="state-key">running</div>
-
-            <div>
-              <button
-                className="event-button"
-                onClick={() => send({ type: "pause" })}
-              >
-                PAUSE
-              </button>
-            </div>
+            <TransportButton onClick={() => send({ type: "pause" })}>
+              <Pause />
+            </TransportButton>
           </div>
         )}
-
         {state.matches("paused") && (
-          <div>
-            <div className="state-key">paused</div>
-
-            <div>
-              <button
-                className="event-button"
-                onClick={() => send({ type: "start" })}
-              >
-                START
-              </button>
-              <button
-                className="event-button"
-                onClick={() => send({ type: "reset" })}
-              >
-                RESET
-              </button>
-            </div>
-          </div>
+          <TransportButton onClick={() => send({ type: "start" })}>
+            <Play />
+          </TransportButton>
         )}
-        <div className="clock">
-          <div className="ghost">88:88:88</div>
-          {formatMilliseconds(state.context.elapsedTime)}
-        </div>
+        <TransportButton onClick={() => send({ type: "reset" })}>
+          <Square />
+        </TransportButton>
+      </div>
+      <div className="clock">
+        <div className="ghost">88:88:88</div>
+        {formatMilliseconds(state.context.elapsedTime)}
       </div>
     </div>
   );

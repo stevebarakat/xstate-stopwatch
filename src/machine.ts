@@ -25,7 +25,9 @@ export const machine = createMachine(
           onSnapshot: {
             actions: assign(() => {
               const elapsedTime = t.seconds;
-              return { elapsedTime };
+              return {
+                elapsedTime,
+              };
             }),
           },
         },
@@ -33,6 +35,13 @@ export const machine = createMachine(
           pause: {
             target: "paused",
             actions: () => t.pause(),
+          },
+          reset: {
+            target: "paused",
+            actions: assign(({ context }) => {
+              context.elapsedTime = 0;
+              t.stop();
+            }),
           },
         },
       },
@@ -45,9 +54,8 @@ export const machine = createMachine(
           reset: {
             target: "paused",
             actions: assign(({ context }) => {
+              context.elapsedTime = 0;
               t.stop();
-              const elapsedTime = 0;
-              return { elapsedTime };
             }),
           },
         },
