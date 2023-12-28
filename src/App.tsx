@@ -1,24 +1,28 @@
 import { useMachine } from "@xstate/react";
-import { stopwatchMachine } from "./machine";
+import { machine } from "./machine";
 
 export default function App() {
-  const [state, send] = useMachine(stopwatchMachine);
+  const [state, send] = useMachine(machine);
 
-  console.log("state.context", state.context);
+  console.log("state.context.elapsedTime", state.context.elapsedTime);
 
   return (
     <div className="App">
       <div>
-        {state.matches("stopped") && (
+        <div className="state-key"></div>
+
+        <div></div>
+
+        {state.matches("initial") && (
           <div>
-            <div className="state-key">stopped</div>
+            <div className="state-key">initial</div>
 
             <div>
               <button
                 className="event-button"
-                onClick={() => send({ type: "start" })}
+                onClick={() => send({ type: "PRESS_START" })}
               >
-                start
+                PRESS_START
               </button>
             </div>
           </div>
@@ -31,20 +35,48 @@ export default function App() {
             <div>
               <button
                 className="event-button"
-                onClick={() => send({ type: "pause" })}
+                onClick={() => send({ type: "PRESS_STOP" })}
               >
-                pause
+                PRESS_STOP
               </button>
               <button
                 className="event-button"
-                onClick={() => send({ type: "reset" })}
+                onClick={() => send({ type: "TICK" })}
               >
-                reset
+                TICK
+              </button>
+              <button
+                className="event-button"
+                onClick={() => send({ type: "PRESS_LAP" })}
+              >
+                PRESS_LAP
               </button>
             </div>
-            {state.context.currentTime}
           </div>
         )}
+
+        {state.matches("paused") && (
+          <div>
+            <div className="state-key">paused</div>
+
+            <div>
+              <button
+                className="event-button"
+                onClick={() => send({ type: "PRESS_START" })}
+              >
+                PRESS_START
+              </button>
+              <button
+                className="event-button"
+                onClick={() => send({ type: "PRESS_RESET" })}
+              >
+                PRESS_RESET
+              </button>
+            </div>
+          </div>
+        )}
+
+        <pre>{JSON.stringify(state.context, null, 2)}</pre>
       </div>
     </div>
   );
